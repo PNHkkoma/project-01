@@ -8,6 +8,8 @@ import (
 
 func GetSessionData(context *gin.Context) {
 	// response Json for client
+	//db, exist := context.Get("db")
+	//log.Println(exist)
 
 	context.JSON(200, gin.H{
 		"status": 200,
