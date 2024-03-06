@@ -1,4 +1,4 @@
-module AR_World_backend
+module xrplatform/arworld/backend
 
 go 1.22
 
