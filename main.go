@@ -12,11 +12,10 @@ func main() {
 
 	// create new web engine
 	webEngine := gin.Default()
+	middleware.ConnectMySQL(webEngine)
 
 	// define all router for backend
 	router.DefineRouters(webEngine)
-
-	middleware.ConnectMySQL(webEngine)
 
 	// run web service and log error
 	if err := webEngine.Run(); err != nil {
