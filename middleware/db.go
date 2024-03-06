@@ -14,3 +14,13 @@ func ConnectMySQL(webEngine *gin.Engine) {
 
 	webEngine.Use(func(c *gin.Context) { c.Set("db", db) })
 }
+
+func GetDBFromContext(context *gin.Context) *sql.DB {
+	db, exist := context.Get("db")
+
+	if !exist {
+		return nil
+	} else {
+		return db.(*sql.DB)
+	}
+}

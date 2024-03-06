@@ -1,68 +1,63 @@
 package router
 
 import (
-	"database/sql"
 	"github.com/gin-gonic/gin"
 	"log"
+	"xrplatform/arworld/backend/middleware"
 	"xrplatform/arworld/backend/models"
 )
 
 func GetSessionData(context *gin.Context) {
-	//var SessionID string
-	//var sessionData string
-	//
-	//if context.ShouldBind(&SessionID) == nil {
-	//	// log content
-	//	log.Println(SessionID)
-	//}
-	//DB, exist := context.Get("db")
-	//db := DB.(*sql.DB)
-	//log.Println(exist)
-	//
-	////check already exists
-	//querryData := `SELECT SessionData FROM sessiondata WHERE SessionID = ?`
-	//checkData := db.QueryRow(querryData, context.Request.Body).Scan(&sessionData)
-	//
-	//log.Println(checkData, "gì đó", SessionID)
-	//
-	//if checkData != nil {
-	//	// response Json for client
-	//	context.JSON(409, gin.H{
-	//		"status": 409,
-	//		"error":  "Data error",
-	//	})
-	//} else {
-	//	// response Json for client
-	//	context.JSON(200, gin.H{
-	//		"status": 200,
-	//		"data":   checkData,
-	//	})
-	//}
-	context.JSON(200, gin.H{
-		"status": 200,
-		"data":   "data error",
-	})
+	// declare form data for session
+	var formData models.SessionGetData
 
+	// verify data match type of SessionUploadData
+	if context.ShouldBind(&formData) != nil {
+		// log error here
+		return
+	}
+
+	db := middleware.GetDBFromContext(context)
+	// check db == nil
+
+	var sessionData string
+	//check already exists
+
+	scanCode := db.QueryRow(middleware.GetSessionDataQuery,
+		formData.SessionID).Scan(&sessionData)
+	log.Println(sessionData)
+
+	if scanCode != nil {
+		// response Json for client
+		context.JSON(409, gin.H{
+			"status": 409,
+			"error":  "Data error",
+		})
+	} else {
+		// response Json for client
+		context.JSON(200, gin.H{
+			"status": 200,
+			"data":   sessionData,
+		})
+	}
 }
 
 func UploadSessionData(context *gin.Context) {
 	// declare form data for session
-	var formData models.SessionFormData
+	var formData models.SessionUploadData
 
-	// verify data match type of SessionFormData
-	if context.ShouldBind(&formData) == nil {
-		// log content
-		log.Println(formData.SessionData)
-		log.Println(formData.SessionID)
+	// verify data match type of SessionUploadData
+	if context.ShouldBind(&formData) != nil {
+		// log error here
+		return
 	}
 
-	DB, exist := context.Get("db")
-	db := DB.(*sql.DB)
-	log.Println(exist)
+	db := middleware.GetDBFromContext(context)
+	// check db == nil
 
 	// check already exists
-	querryExists := `SELECT SessionID FROM sessiondata WHERE SessionID = ?`
-	checkExist := db.QueryRow(querryExists, formData.SessionID).Scan(&formData.SessionID)
+	checkExist := db.QueryRow(middleware.GetSessionDataQuery,
+		formData.SessionID).Scan(&formData.SessionID)
 	log.Println(checkExist)
 
 	if checkExist == nil {
@@ -71,7 +66,8 @@ func UploadSessionData(context *gin.Context) {
 		})
 	} else {
 		// save data
-		result, err := db.Exec(`INSERT INTO sessiondata (SessionID, SessionData) VALUES (?, ?)`, formData.SessionID, formData.SessionData)
+		result, err := db.Exec(middleware.InsertSessionDataQuery,
+			formData.SessionID, formData.SessionData)
 		if err != nil {
 			log.Println(err)
 		} else {
