@@ -1,10 +1,11 @@
-package router
+package routes
 
 import (
-	"github.com/gin-gonic/gin"
 	"log"
-	"xrplatform/arworld/backend/middleware"
+	"xrplatform/arworld/backend/middleware/mysql"
 	"xrplatform/arworld/backend/models"
+
+	"github.com/gin-gonic/gin"
 )
 
 func GetSessionData(context *gin.Context) {
@@ -17,13 +18,13 @@ func GetSessionData(context *gin.Context) {
 		return
 	}
 
-	db := middleware.GetDBFromContext(context)
+	db := mysql.GetDBFromContext(context)
 	// check db == nil
 
 	var sessionData string
 	//check already exists
 
-	scanCode := db.QueryRow(middleware.GetSessionDataQuery,
+	scanCode := db.QueryRow(mysql.GetSessionDataQuery,
 		formData.SessionID).Scan(&sessionData)
 	log.Println(sessionData)
 
@@ -52,11 +53,11 @@ func UploadSessionData(context *gin.Context) {
 		return
 	}
 
-	db := middleware.GetDBFromContext(context)
+	db := mysql.GetDBFromContext(context)
 	// check db == nil
 
 	// check already exists
-	checkExist := db.QueryRow(middleware.GetSessionDataQuery,
+	checkExist := db.QueryRow(mysql.GetSessionDataQuery,
 		formData.SessionID).Scan(&formData.SessionID)
 	log.Println(checkExist)
 
@@ -66,7 +67,7 @@ func UploadSessionData(context *gin.Context) {
 		})
 	} else {
 		// save data
-		result, err := db.Exec(middleware.InsertSessionDataQuery,
+		result, err := db.Exec(mysql.InsertSessionDataQuery,
 			formData.SessionID, formData.SessionData)
 		if err != nil {
 			log.Println(err)
