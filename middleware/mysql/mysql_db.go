@@ -15,14 +15,14 @@ func ConnectDB(webEngine *gin.Engine) *sql.DB {
 
 	// add sql.DB to gin.Engine
 	webEngine.Use(func(context *gin.Context) {
-		context.Set("db", db)
+		context.Set("mysql_db", db)
 	})
 	return db
 }
 
 func GetDBFromContext(context *gin.Context) *sql.DB {
 	// get db from context
-	db, exist := context.Get("db")
+	db, exist := context.Get("mysql_db")
 
 	if !exist {
 		return nil
