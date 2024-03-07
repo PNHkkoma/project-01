@@ -17,7 +17,7 @@ func main() {
 	defer db.Close()
 
 	// define all router for backend
-	routes.DefineRouters(webEngine)
+	routes.DefineRoutes(webEngine)
 
 	// run web service and log error
 	if err := webEngine.Run(); err != nil {
