@@ -23,7 +23,7 @@ func GetSessionData(context *gin.Context) {
 	// check db == nil
 	if db == nil {
 		log.Println("cannot connect to db")
-		context.JSON(500, gin.H{
+		context.JSON(200, gin.H{
 			"status": 500,
 			"error":  "cannot connect to db",
 		})
@@ -38,7 +38,7 @@ func GetSessionData(context *gin.Context) {
 
 	if scanCode != nil {
 		// response Json for client
-		context.JSON(500, gin.H{
+		context.JSON(200, gin.H{
 			"status": 500,
 			"error":  "Data error",
 		})
@@ -65,7 +65,7 @@ func UploadSessionData(context *gin.Context) {
 	// check db == nil
 	if db == nil {
 		log.Println("cannot conect to db")
-		context.JSON(500, gin.H{
+		context.JSON(200, gin.H{
 			"status": 500,
 			"error":  "cannot connect to db",
 		})
