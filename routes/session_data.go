@@ -15,12 +15,20 @@ func GetSessionData(context *gin.Context) {
 	// verify data match type of SessionUploadData
 	if context.ShouldBind(&formData) != nil {
 		// log error here
+		log.Println("err here")
 		return
 	}
 
 	db := mysql.GetDBFromContext(context)
 	// check db == nil
-
+	if db == nil {
+		log.Println(" not conect to db")
+		context.JSON(500, gin.H{
+			"status": 500,
+			"error":  "not connect to db",
+		})
+		return
+	}
 	var sessionData string
 	//check already exists
 
@@ -30,8 +38,8 @@ func GetSessionData(context *gin.Context) {
 
 	if scanCode != nil {
 		// response Json for client
-		context.JSON(409, gin.H{
-			"status": 409,
+		context.JSON(500, gin.H{
+			"status": 500,
 			"error":  "Data error",
 		})
 	} else {
@@ -55,6 +63,14 @@ func UploadSessionData(context *gin.Context) {
 
 	db := mysql.GetDBFromContext(context)
 	// check db == nil
+	if db == nil {
+		log.Println(" not conect to db")
+		context.JSON(500, gin.H{
+			"status": 500,
+			"error":  "not connect to db",
+		})
+		return
+	}
 
 	// check already exists
 	checkExist := db.QueryRow(mysql.GetSessionDataQuery,
@@ -62,8 +78,8 @@ func UploadSessionData(context *gin.Context) {
 	log.Println(checkExist)
 
 	if checkExist == nil {
-		context.JSON(409, gin.H{
-			"error": "SessionID already exists",
+		context.JSON(500, gin.H{
+			"error": "session ID already exists",
 		})
 	} else {
 		// save data
@@ -71,12 +87,17 @@ func UploadSessionData(context *gin.Context) {
 			formData.SessionID, formData.SessionData)
 		if err != nil {
 			log.Println(err)
+			context.JSON(500, gin.H{
+				"status": 500,
+				"data":   "fail to upload data",
+			})
 		} else {
 			log.Println(result)
+			context.JSON(200, gin.H{
+				"status": 200,
+				"data":   "success",
+			})
 		}
-		context.JSON(200, gin.H{
-			"status": 200,
-			"data":   formData,
-		})
+
 	}
 }
