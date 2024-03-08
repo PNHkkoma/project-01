@@ -15,23 +15,23 @@ func GetSessionData(context *gin.Context) {
 	// verify data match type of SessionUploadData
 	if context.ShouldBind(&formData) != nil {
 		// log error here
-		log.Println("err here")
+		log.Println("cannot bind to form data")
 		return
 	}
 
 	db := mysql.GetDBFromContext(context)
 	// check db == nil
 	if db == nil {
-		log.Println(" not conect to db")
+		log.Println("cannot connect to db")
 		context.JSON(500, gin.H{
 			"status": 500,
-			"error":  "not connect to db",
+			"error":  "cannot connect to db",
 		})
 		return
 	}
 	var sessionData string
-	//check already exists
 
+	//check already exists
 	scanCode := db.QueryRow(mysql.GetSessionDataQuery,
 		formData.SessionID).Scan(&sessionData)
 	log.Println(sessionData)
@@ -64,10 +64,10 @@ func UploadSessionData(context *gin.Context) {
 	db := mysql.GetDBFromContext(context)
 	// check db == nil
 	if db == nil {
-		log.Println(" not conect to db")
+		log.Println("cannot conect to db")
 		context.JSON(500, gin.H{
 			"status": 500,
-			"error":  "not connect to db",
+			"error":  "cannot connect to db",
 		})
 		return
 	}
@@ -78,8 +78,9 @@ func UploadSessionData(context *gin.Context) {
 	log.Println(checkExist)
 
 	if checkExist == nil {
-		context.JSON(500, gin.H{
-			"error": "session ID already exists",
+		context.JSON(200, gin.H{
+			"status": 500,
+			"error":  "session ID already exists",
 		})
 	} else {
 		// save data
@@ -87,7 +88,7 @@ func UploadSessionData(context *gin.Context) {
 			formData.SessionID, formData.SessionData)
 		if err != nil {
 			log.Println(err)
-			context.JSON(500, gin.H{
+			context.JSON(200, gin.H{
 				"status": 500,
 				"data":   "fail to upload data",
 			})
