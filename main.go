@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"xrplatform/arworld/backend/middleware/mysql"
 	"xrplatform/arworld/backend/routes"
@@ -14,7 +15,9 @@ func main() {
 
 	// connect db
 	db := mysql.ConnectDB(webEngine)
-	defer db.Close()
+	defer func(db *sql.DB) {
+		_ = db.Close()
+	}(db)
 
 	// define all router for backend
 	routes.DefineRoutes(webEngine)
