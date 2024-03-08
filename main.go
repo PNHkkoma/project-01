@@ -1,25 +1,26 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
-	"xrplatform/arworld/backend/middleware"
-	"xrplatform/arworld/backend/router"
+	"xrplatform/arworld/backend/middleware/mysql"
+	"xrplatform/arworld/backend/routes"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-
 	// create new web engine
 	webEngine := gin.Default()
-	middleware.ConnectMySQL(webEngine)
+
+	// connect db
+	db := mysql.ConnectDB(webEngine)
+	defer db.Close()
 
 	// define all router for backend
-	router.DefineRouters(webEngine)
+	routes.DefineRoutes(webEngine)
 
 	// run web service and log error
 	if err := webEngine.Run(); err != nil {
 		log.Println("start server failed")
 	}
-
 }
