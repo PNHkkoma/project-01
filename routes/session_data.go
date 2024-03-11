@@ -2,7 +2,9 @@ package routes
 
 import (
 	"log"
+	"time"
 	"xrplatform/arworld/backend/middleware/mysql"
+	"xrplatform/arworld/backend/middleware/redis_cli"
 	"xrplatform/arworld/backend/models"
 
 	"github.com/gin-gonic/gin"
@@ -19,8 +21,36 @@ func GetSessionData(context *gin.Context) {
 		return
 	}
 
+	// session data variable
+	var sessionData string
+
+	// get redis_cli client from context
+	redisClient := redis_cli.GetRedisClient(context)
+
+	if redisClient == nil {
+		log.Println("cannot connect to redis_cli")
+		context.JSON(200, gin.H{
+			"status": 500,
+			"error":  "cannot connect to redis_cli",
+		})
+		return
+	}
+
+	// get data from sessionID in redis_cli
+	sessionData = redis_cli.GetRedisSessionData(redisClient, formData.SessionID)
+
+	if sessionData != "" {
+		// response Json for client
+		context.JSON(200, gin.H{
+			"status": 200,
+			"data":   sessionData,
+		})
+		return
+	}
+
+	// get db client from context
 	db := mysql.GetDBFromContext(context)
-	// check db == nil
+
 	if db == nil {
 		log.Println("cannot connect to db")
 		context.JSON(200, gin.H{
@@ -29,12 +59,10 @@ func GetSessionData(context *gin.Context) {
 		})
 		return
 	}
-	var sessionData string
 
 	//check already exists
 	scanCode := db.QueryRow(mysql.GetSessionDataQuery,
 		formData.SessionID).Scan(&sessionData)
-	log.Println(sessionData)
 
 	if scanCode != nil {
 		// response Json for client
@@ -43,6 +71,9 @@ func GetSessionData(context *gin.Context) {
 			"error":  "Data error",
 		})
 	} else {
+		// add data to redis_cli
+		redis_cli.SetRedisSessionData(redisClient, formData.SessionID, sessionData, 5*time.Minute)
+
 		// response Json for client
 		context.JSON(200, gin.H{
 			"status": 200,
@@ -61,10 +92,11 @@ func UploadSessionData(context *gin.Context) {
 		return
 	}
 
+	// get db client from context
 	db := mysql.GetDBFromContext(context)
-	// check db == nil
+
 	if db == nil {
-		log.Println("cannot conect to db")
+		log.Println("cannot connect to db")
 		context.JSON(200, gin.H{
 			"status": 500,
 			"error":  "cannot connect to db",
@@ -75,7 +107,6 @@ func UploadSessionData(context *gin.Context) {
 	// check already exists
 	checkExist := db.QueryRow(mysql.GetSessionDataQuery,
 		formData.SessionID).Scan(&formData.SessionID)
-	log.Println(checkExist)
 
 	if checkExist == nil {
 		context.JSON(200, gin.H{
@@ -83,9 +114,10 @@ func UploadSessionData(context *gin.Context) {
 			"error":  "session ID already exists",
 		})
 	} else {
-		// save data
+		// save data to db
 		result, err := db.Exec(mysql.InsertSessionDataQuery,
 			formData.SessionID, formData.SessionData)
+
 		if err != nil {
 			log.Println(err)
 			context.JSON(200, gin.H{
@@ -99,6 +131,5 @@ func UploadSessionData(context *gin.Context) {
 				"data":   "success",
 			})
 		}
-
 	}
 }

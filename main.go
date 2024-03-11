@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"log"
 	"xrplatform/arworld/backend/middleware/mysql"
+	"xrplatform/arworld/backend/middleware/redis_cli"
 	"xrplatform/arworld/backend/routes"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -18,6 +20,11 @@ func main() {
 	defer func(db *sql.DB) {
 		_ = db.Close()
 	}(db)
+
+	redisClient := redis_cli.ConnectRedis(webEngine)
+	defer func(redis *redis.Client) {
+		_ = redis.Close()
+	}(redisClient)
 
 	// define all router for backend
 	routes.DefineRoutes(webEngine)
