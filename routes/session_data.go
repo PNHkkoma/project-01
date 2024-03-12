@@ -27,19 +27,19 @@ func GetSessionData(ctx *gin.Context) {
 	// session data variable
 	var sessionData string
 
-	// get redis_cli client from ctx
+	// get redis client from ctx
 	redisClient := redis_cli.GetClient(ctx)
 
 	if redisClient == nil {
-		log.Println("cannot connect to redis_cli")
+		log.Println("cannot connect to redis")
 		ctx.JSON(200, gin.H{
 			"status": 500,
-			"error":  "cannot connect to redis_cli",
+			"error":  "cannot connect to redis",
 		})
 		return
 	}
 
-	// get data from sessionID in redis_cli
+	// get data from sessionID in redis
 	sessionData = redis_cli.GetSessionDataFromRedis(appCtx, redisClient, formData.SessionID)
 
 	if sessionData != "" {
@@ -74,7 +74,7 @@ func GetSessionData(ctx *gin.Context) {
 			"error":  "Data error",
 		})
 	} else {
-		// add data to redis_cli
+		// add data to redis
 		redis_cli.SetSessionDataToRedis(appCtx, redisClient, formData.SessionID,
 			sessionData, 5*time.Minute)
 

@@ -21,7 +21,7 @@ func Connect(ctx context.Context, webEngine *gin.Engine) *redis.Client {
 		log.Println("Failed to connect to Redis: ", err)
 	}
 
-	// add redis.Client to gin.Engine
+	// add redis client to gin.Engine
 	webEngine.Use(func(context *gin.Context) {
 		context.Set("redis_cli", redisClient)
 	})
