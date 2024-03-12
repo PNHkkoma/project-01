@@ -23,7 +23,9 @@ func GetAppEnv(key string) string {
 
 func GetAppContext() context.Context {
 	appCtx := context.Background()
-	appCtx = context.WithValue(appCtx, ctxKey{}, AppEnv{})
+	appCtx = context.WithValue(appCtx, ctxKey{}, AppEnv{
+		env: map[string]any{},
+	})
 	return appCtx
 }
 
