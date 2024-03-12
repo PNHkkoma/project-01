@@ -2,13 +2,14 @@ package tests
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"xrplatform/arworld/backend/env"
 	"xrplatform/arworld/backend/middleware/mysql"
+	"xrplatform/arworld/backend/middleware/redis_cli"
 	"xrplatform/arworld/backend/models"
 	"xrplatform/arworld/backend/routes"
 
@@ -36,11 +37,25 @@ func TestGetSessionData(t *testing.T) {
 	// set up a test router
 	router := gin.Default()
 
+	// get app context
+	appCtx := env.GetAppContext()
+
+	// add context to gin
+	env.SetContext(appCtx, router)
+
+	// db connection
+	mysql.GetEnv(appCtx)
+
 	// connect db
-	db := mysql.ConnectDB(router)
-	defer func(db *sql.DB) {
-		_ = db.Close()
-	}(db)
+	db := mysql.Connect(appCtx, router)
+	defer mysql.Close(db)
+
+	// redis connection
+	redis_cli.GetEnv(appCtx)
+
+	// connect redis
+	redisClient := redis_cli.Connect(appCtx, router)
+	defer redis_cli.Close(redisClient)
 
 	// test route
 	router.POST("/ar-world/v1/session-data/get", routes.GetSessionData)
@@ -99,11 +114,25 @@ func TestUploadSessionData(t *testing.T) {
 	// create router
 	router := gin.Default()
 
+	// get app context
+	appCtx := env.GetAppContext()
+
+	// add context to gin
+	env.SetContext(appCtx, router)
+
+	// db connection
+	mysql.GetEnv(appCtx)
+
 	// connect db
-	db := mysql.ConnectDB(router)
-	defer func(db *sql.DB) {
-		_ = db.Close()
-	}(db)
+	db := mysql.Connect(appCtx, router)
+	defer mysql.Close(db)
+
+	// redis connection
+	redis_cli.GetEnv(appCtx)
+
+	// connect redis
+	redisClient := redis_cli.Connect(appCtx, router)
+	defer redis_cli.Close(redisClient)
 
 	// test route
 	router.POST("/ar-world/v1/session-data/upload", routes.UploadSessionData)
