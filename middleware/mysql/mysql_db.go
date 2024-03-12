@@ -43,9 +43,9 @@ func GetDB(ctx *gin.Context) *sql.DB {
 
 func GetEnv(appCtx context.Context) {
 	// database env
-	mySQLHost := env.GetAppEnv(env.MySQLHost)
-	mySQLPort := env.GetAppEnv(env.MySQLPort)
-	mySQLDBName := env.GetAppEnv(env.MySQLDatabase)
+	mySQLHost := env.GetAppEnv(env.MySqlHost)
+	mySQLPort := env.GetAppEnv(env.MySqlPort)
+	mySQLDBName := env.GetAppEnv(env.MySqlDB)
 	connection := fmt.Sprintf("root:@(%s:%s)/%s?parseTime=true", mySQLHost, mySQLPort, mySQLDBName)
 
 	env.SetAppKey(appCtx, "mysql_conn", connection)

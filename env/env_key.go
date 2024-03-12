@@ -1,8 +1,8 @@
 package env
 
-const MySQLHost = "MYSQL_HOST"
-const MySQLPort = "MYSQL_PORT"
-const MySQLDatabase = "MYSQL_DB"
+const MySqlHost = "MYSQL_HOST"
+const MySqlPort = "MYSQL_PORT"
+const MySqlDB = "MYSQL_DB"
 
 const RedisHost = "REDIS_HOST"
 const RedisPort = "REDIS_PORT"
