@@ -1,38 +1,62 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"log"
+	"xrplatform/arworld/backend/env"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func ConnectDB(webEngine *gin.Engine) *sql.DB {
-	db, err := sql.Open("mysql", "root:@(127.0.0.1:3306)/sessiondata?parseTime=true")
-	if err != nil {
-		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
-	}
+func Connect(appCtx context.Context, webEngine *gin.Engine) *sql.DB {
+	db := getDB(appCtx)
 
 	// check db connection
-	err = db.Ping()
+	err := db.Ping()
 	if err != nil {
 		log.Println("Failed to connect to db: ", err)
 	}
 
 	// add sql.DB to gin.Engine
-	webEngine.Use(func(context *gin.Context) {
-		context.Set("mysql_db", db)
+	webEngine.Use(func(ctx *gin.Context) {
+		ctx.Set("mysql_db", db)
 	})
 	return db
 }
 
-func GetDBFromContext(context *gin.Context) *sql.DB {
+func Close(db *sql.DB) {
+	_ = db.Close()
+}
+
+func GetDB(ctx *gin.Context) *sql.DB {
 	// get db from context
-	db, exist := context.Get("mysql_db")
-	if !exist {
-		return nil
-	} else {
+	db, exist := ctx.Get("mysql_db")
+	if exist {
 		return db.(*sql.DB)
+	} else {
+		return nil
 	}
+}
+
+func GetEnv(appCtx context.Context) {
+	// database env
+	mySQLHost := env.GetAppEnv(env.MySQLHost)
+	mySQLPort := env.GetAppEnv(env.MySQLPort)
+	mySQLDBName := env.GetAppEnv(env.MySQLDatabase)
+	connection := fmt.Sprintf("root:@(%s:%s)/%s?parseTime=true", mySQLHost, mySQLPort, mySQLDBName)
+
+	env.SetAppKey(appCtx, "mysql_conn", connection)
+}
+
+func getDB(appCtx context.Context) *sql.DB {
+	dbConn := env.GetAppKey(appCtx, "mysql_conn").(string)
+
+	db, err := sql.Open("mysql", dbConn)
+	if err != nil {
+		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+	}
+	return db
 }
