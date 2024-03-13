@@ -1,8 +1,10 @@
 package main
 
 import (
+	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"xrplatform/arworld/backend/env"
+	"xrplatform/arworld/backend/middleware/mongodb"
 	"xrplatform/arworld/backend/middleware/mysql"
 	"xrplatform/arworld/backend/middleware/redis_cli"
 	"xrplatform/arworld/backend/routes"
@@ -10,6 +12,16 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
 )
+
+type Application struct {
+	dataCollection *mongo.Collection
+}
+
+func NewApplication(dataCollection *mongo.Collection) *Application {
+	return &Application{
+		dataCollection: dataCollection,
+	}
+}
 
 func main() {
 	// create new web engine
@@ -27,6 +39,8 @@ func main() {
 	// connect db
 	db := mysql.Connect(appCtx, webEngine)
 	defer mysql.Close(db)
+
+	mongodb.Connect()
 
 	// redis connection
 	redis_cli.GetEnv(appCtx)
