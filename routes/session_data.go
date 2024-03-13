@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 	"xrplatform/arworld/backend/env"
-	"xrplatform/arworld/backend/middleware/mysql"
+	"xrplatform/arworld/backend/middleware/mongodb"
 	"xrplatform/arworld/backend/middleware/redis_cli"
 	"xrplatform/arworld/backend/models"
 
@@ -24,9 +24,6 @@ func GetSessionData(ctx *gin.Context) {
 		return
 	}
 
-	// session data variable
-	var sessionData string
-
 	// get redis client from ctx
 	redisClient := redis_cli.GetClient(ctx)
 
@@ -40,19 +37,19 @@ func GetSessionData(ctx *gin.Context) {
 	}
 
 	// get data from sessionID in redis
-	sessionData = redis_cli.GetSessionDataFromRedis(appCtx, redisClient, formData.SessionID)
+	cacheData := redis_cli.GetSessionDataFromRedis(appCtx, redisClient, formData.SessionID)
 
-	if sessionData != "" {
+	if cacheData != "" {
 		// response Json for client
 		ctx.JSON(200, gin.H{
 			"status": 200,
-			"data":   sessionData,
+			"data":   cacheData,
 		})
 		return
 	}
 
 	// get db client from ctx
-	db := mysql.GetDB(ctx)
+	db := mongodb.GetDB(ctx)
 
 	if db == nil {
 		log.Println("cannot connect to db")
@@ -64,7 +61,7 @@ func GetSessionData(ctx *gin.Context) {
 	}
 
 	//check already exists
-	scanCode := mysql.QueryGetSessionData(db, formData.SessionID, &sessionData)
+	sessionData, scanCode := mongodb.QueryGetSessionData(db, formData.SessionID, appCtx)
 
 	if scanCode != nil {
 		// response Json for client
@@ -96,7 +93,7 @@ func UploadSessionData(ctx *gin.Context) {
 	}
 
 	// get db client from ctx
-	db := mysql.GetDB(ctx)
+	db := mongodb.GetDB(ctx)
 
 	if db == nil {
 		log.Println("cannot connect to db")
@@ -108,7 +105,7 @@ func UploadSessionData(ctx *gin.Context) {
 	}
 
 	// save data to db
-	_, err := mysql.QueryUploadSessionData(db, formData.SessionID, formData.SessionData)
+	err := mongodb.QueryUploadSessionData(db, formData.SessionID, formData.SessionData)
 
 	if err != nil {
 		log.Println(err)

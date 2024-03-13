@@ -8,7 +8,3 @@ type SessionUploadData struct {
 type SessionGetData struct {
 	SessionID string `form:"id" json:"id"`
 }
-
-type Data struct {
-	SessionID string `json:"id,omitempty" bson:"id,omitempty"`
-}

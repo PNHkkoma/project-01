@@ -53,7 +53,7 @@ func GetEnv(appCtx context.Context) {
 
 func getDB(appCtx context.Context) *sql.DB {
 	dbConn := env.GetAppKey(appCtx, "mysql_conn").(string)
-
+	log.Println(dbConn)
 	db, err := sql.Open("mysql", dbConn)
 	if err != nil {
 		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic

@@ -4,6 +4,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"xrplatform/arworld/backend/env"
+	"xrplatform/arworld/backend/middleware/mongodb"
 	"xrplatform/arworld/backend/middleware/mysql"
 	"xrplatform/arworld/backend/middleware/redis_cli"
 	"xrplatform/arworld/backend/routes"
@@ -36,8 +37,9 @@ func main() {
 	mysql.GetEnv(appCtx)
 
 	// connect db
-	db := mysql.Connect(appCtx, webEngine)
-	defer mysql.Close(db)
+	//db := mysql.Connect(appCtx, webEngine)
+	//defer mysql.Close(db)
+	mongodb.Connect(appCtx, webEngine)
 
 	// redis connection
 	redis_cli.GetEnv(appCtx)
