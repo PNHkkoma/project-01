@@ -2,16 +2,17 @@ package mongodb
 
 import (
 	"context"
+	"log"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"log"
 )
 
-func QueryGetSessionData(db *mongo.Database, sessionID string, ctx context.Context) (string, error) {
+func QueryGetSessionData(db *mongo.Database, sessionID string) (string, error) {
 	var collection = db.Collection("sessionData")
-	// Tạo một biến để lưu trữ dữ liệu trả về
+	// create variable to save bson value
 	var result bson.M
-	err := collection.FindOne(ctx, bson.M{"SessionID": sessionID}).Decode(&result)
+	err := collection.FindOne(context.Background(), bson.M{"SessionID": sessionID}).Decode(&result)
 
 	data, found := result["SessionData"].(string)
 	if !found {
@@ -23,12 +24,9 @@ func QueryGetSessionData(db *mongo.Database, sessionID string, ctx context.Conte
 func QueryUploadSessionData(db *mongo.Database, sessionID string, sessionData string) error {
 	var collection = db.Collection("sessionData")
 	newSessionData := bson.D{
-		{"SessionID", sessionID},
-		{"SessionData", sessionData},
+		{Key: "SessionID", Value: sessionID},
+		{Key: "SessionData", Value: sessionData},
 	}
 	_, err := collection.InsertOne(context.Background(), newSessionData)
-	if err != nil {
-		log.Fatal(err)
-	}
 	return err
 }

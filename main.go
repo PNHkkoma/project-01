@@ -1,13 +1,13 @@
 package main
 
 import (
-	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"xrplatform/arworld/backend/env"
 	"xrplatform/arworld/backend/middleware/mongodb"
-	"xrplatform/arworld/backend/middleware/mysql"
 	"xrplatform/arworld/backend/middleware/redis_cli"
 	"xrplatform/arworld/backend/routes"
+
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
@@ -34,11 +34,9 @@ func main() {
 	env.SetContext(appCtx, webEngine)
 
 	// db connection
-	mysql.GetEnv(appCtx)
+	mongodb.GetEnv(appCtx)
 
 	// connect db
-	//db := mysql.Connect(appCtx, webEngine)
-	//defer mysql.Close(db)
 	mongodb.Connect(appCtx, webEngine)
 
 	// redis connection

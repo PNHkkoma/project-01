@@ -61,7 +61,7 @@ func GetSessionData(ctx *gin.Context) {
 	}
 
 	//check already exists
-	sessionData, scanCode := mongodb.QueryGetSessionData(db, formData.SessionID, appCtx)
+	sessionData, scanCode := mongodb.QueryGetSessionData(db, formData.SessionID)
 
 	if scanCode != nil {
 		// response Json for client
