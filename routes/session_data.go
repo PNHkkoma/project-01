@@ -64,8 +64,7 @@ func GetSessionData(ctx *gin.Context) {
 	}
 
 	//check already exists
-	scanCode := db.QueryRow(mysql.GetSessionDataQuery,
-		formData.SessionID).Scan(&sessionData)
+	scanCode := mysql.QueryGetSessionData(db, formData.SessionID, &sessionData)
 
 	if scanCode != nil {
 		// response Json for client
@@ -108,32 +107,19 @@ func UploadSessionData(ctx *gin.Context) {
 		return
 	}
 
-	// check already exists
-	checkExist := db.QueryRow(mysql.GetSessionDataQuery,
-		formData.SessionID).Scan(&formData.SessionID)
+	// save data to db
+	_, err := mysql.QueryUploadSessionData(db, formData.SessionID, formData.SessionData)
 
-	if checkExist == nil {
+	if err != nil {
+		log.Println(err)
 		ctx.JSON(200, gin.H{
 			"status": 500,
-			"error":  "session ID already exists",
+			"data":   "fail to upload data",
 		})
 	} else {
-		// save data to db
-		result, err := db.Exec(mysql.InsertSessionDataQuery,
-			formData.SessionID, formData.SessionData)
-
-		if err != nil {
-			log.Println(err)
-			ctx.JSON(200, gin.H{
-				"status": 500,
-				"data":   "fail to upload data",
-			})
-		} else {
-			log.Println(result)
-			ctx.JSON(200, gin.H{
-				"status": 200,
-				"data":   "success",
-			})
-		}
+		ctx.JSON(200, gin.H{
+			"status": 200,
+			"data":   "success",
+		})
 	}
 }
