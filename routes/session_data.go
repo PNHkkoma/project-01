@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 	"xrplatform/arworld/backend/env"
-	"xrplatform/arworld/backend/middleware/mysql"
+	"xrplatform/arworld/backend/middleware/mongodb"
 	"xrplatform/arworld/backend/middleware/redis_cli"
 	"xrplatform/arworld/backend/models"
 
@@ -24,9 +24,6 @@ func GetSessionData(ctx *gin.Context) {
 		return
 	}
 
-	// session data variable
-	var sessionData string
-
 	// get redis client from ctx
 	redisClient := redis_cli.GetClient(ctx)
 
@@ -40,19 +37,19 @@ func GetSessionData(ctx *gin.Context) {
 	}
 
 	// get data from sessionID in redis
-	sessionData = redis_cli.GetSessionDataFromRedis(appCtx, redisClient, formData.SessionID)
+	cacheData := redis_cli.GetSessionDataFromRedis(appCtx, redisClient, formData.SessionID)
 
-	if sessionData != "" {
+	if cacheData != "" {
 		// response Json for client
 		ctx.JSON(200, gin.H{
 			"status": 200,
-			"data":   sessionData,
+			"data":   cacheData,
 		})
 		return
 	}
 
 	// get db client from ctx
-	db := mysql.GetDB(ctx)
+	db := mongodb.GetDB(ctx)
 
 	if db == nil {
 		log.Println("cannot connect to db")
@@ -64,8 +61,7 @@ func GetSessionData(ctx *gin.Context) {
 	}
 
 	//check already exists
-	scanCode := db.QueryRow(mysql.GetSessionDataQuery,
-		formData.SessionID).Scan(&sessionData)
+	sessionData, scanCode := mongodb.QueryGetSessionData(db, formData.SessionID)
 
 	if scanCode != nil {
 		// response Json for client
@@ -97,7 +93,7 @@ func UploadSessionData(ctx *gin.Context) {
 	}
 
 	// get db client from ctx
-	db := mysql.GetDB(ctx)
+	db := mongodb.GetDB(ctx)
 
 	if db == nil {
 		log.Println("cannot connect to db")
@@ -108,32 +104,19 @@ func UploadSessionData(ctx *gin.Context) {
 		return
 	}
 
-	// check already exists
-	checkExist := db.QueryRow(mysql.GetSessionDataQuery,
-		formData.SessionID).Scan(&formData.SessionID)
+	// save data to db
+	err := mongodb.QueryUploadSessionData(db, formData.SessionID, formData.SessionData)
 
-	if checkExist == nil {
+	if err != nil {
+		log.Println(err)
 		ctx.JSON(200, gin.H{
 			"status": 500,
-			"error":  "session ID already exists",
+			"data":   "fail to upload data",
 		})
 	} else {
-		// save data to db
-		result, err := db.Exec(mysql.InsertSessionDataQuery,
-			formData.SessionID, formData.SessionData)
-
-		if err != nil {
-			log.Println(err)
-			ctx.JSON(200, gin.H{
-				"status": 500,
-				"data":   "fail to upload data",
-			})
-		} else {
-			log.Println(result)
-			ctx.JSON(200, gin.H{
-				"status": 200,
-				"data":   "success",
-			})
-		}
+		ctx.JSON(200, gin.H{
+			"status": 200,
+			"data":   "success",
+		})
 	}
 }
