@@ -7,21 +7,9 @@ import (
 	"xrplatform/arworld/backend/middleware/redis_cli"
 	"xrplatform/arworld/backend/routes"
 
-	"go.mongodb.org/mongo-driver/mongo"
-
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
 )
-
-type Application struct {
-	dataCollection *mongo.Collection
-}
-
-func NewApplication(dataCollection *mongo.Collection) *Application {
-	return &Application{
-		dataCollection: dataCollection,
-	}
-}
 
 func main() {
 	// create new web engine
