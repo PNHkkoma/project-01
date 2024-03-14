@@ -38,7 +38,7 @@ func main() {
 	routes.DefineRoutes(webEngine)
 
 	// run web service and log error
-	if err := webEngine.Run(); err != nil {
+	if err := webEngine.Run("0.0.0.0:8080"); err != nil {
 		log.Println("start server failed")
 	}
 }
