@@ -46,7 +46,7 @@ func GetStoreByCategoryData(ctx *gin.Context) {
 	// declare form data for session
 	var formData models.StoreDataByCategory
 
-	// verify data match type of SessionUploadData
+	// verify data match type of SessionData
 	if ctx.ShouldBind(&formData) != nil {
 		// log error here
 		log.Println("cannot bind to form data")
@@ -87,7 +87,7 @@ func SearchStoreByStoreName(ctx *gin.Context) {
 	// declare form data for session
 	var formData models.StoreDataSearchKey
 
-	// verify data match type of SessionUploadData
+	// verify data match type of SessionData
 	if ctx.ShouldBind(&formData) != nil {
 		// log error here
 		log.Println("cannot bind to form data")

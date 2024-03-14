@@ -15,7 +15,6 @@ func QueryGetCategoryData(db *mongo.Database) ([]interface{}, error) {
 
 	// create variable to save bson value
 	results, err := collection.Distinct(ctx, "Category", bson.M{})
-	log.Println(results)
 
 	if err != nil {
 		log.Println("Cannot get category data")

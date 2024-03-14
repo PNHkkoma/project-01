@@ -30,3 +30,12 @@ func QueryUploadSessionData(db *mongo.Database, sessionID string, sessionData st
 	_, err := collection.InsertOne(context.Background(), newSessionData)
 	return err
 }
+
+func QueryUpdateSessionData(db *mongo.Database, sessionID string, sessionData string) error {
+	var collection = db.Collection("Sessions")
+	newSessionData := bson.M{
+		"$set": bson.M{"SessionData": sessionData},
+	}
+	_, err := collection.UpdateOne(context.Background(), bson.M{"SessionID": sessionID}, newSessionData)
+	return err
+}
