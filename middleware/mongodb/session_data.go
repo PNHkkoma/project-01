@@ -9,7 +9,7 @@ import (
 )
 
 func QueryGetSessionData(db *mongo.Database, sessionID string) (string, error) {
-	var collection = db.Collection("sessionData")
+	var collection = db.Collection("Sessions")
 	// create variable to save bson value
 	var result bson.M
 	err := collection.FindOne(context.Background(), bson.M{"SessionID": sessionID}).Decode(&result)
@@ -22,11 +22,20 @@ func QueryGetSessionData(db *mongo.Database, sessionID string) (string, error) {
 }
 
 func QueryUploadSessionData(db *mongo.Database, sessionID string, sessionData string) error {
-	var collection = db.Collection("sessionData")
+	var collection = db.Collection("Sessions")
 	newSessionData := bson.D{
 		{Key: "SessionID", Value: sessionID},
 		{Key: "SessionData", Value: sessionData},
 	}
 	_, err := collection.InsertOne(context.Background(), newSessionData)
+	return err
+}
+
+func QueryUpdateSessionData(db *mongo.Database, sessionID string, sessionData string) error {
+	var collection = db.Collection("Sessions")
+	newSessionData := bson.M{
+		"$set": bson.M{"SessionData": sessionData},
+	}
+	_, err := collection.UpdateOne(context.Background(), bson.M{"SessionID": sessionID}, newSessionData)
 	return err
 }

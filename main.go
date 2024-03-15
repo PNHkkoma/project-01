@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"xrplatform/arworld/backend/env"
+	"xrplatform/arworld/backend/middleware/cors"
 	"xrplatform/arworld/backend/middleware/mongodb"
 	"xrplatform/arworld/backend/middleware/redis_cli"
 	"xrplatform/arworld/backend/routes"
@@ -14,6 +15,9 @@ import (
 func main() {
 	// create new web engine
 	webEngine := gin.Default()
+
+	// add cors config
+	cors.DefinesAllowOrigins(webEngine)
 
 	// get app context
 	appCtx := env.GetAppContext()
@@ -38,7 +42,7 @@ func main() {
 	routes.DefineRoutes(webEngine)
 
 	// run web service and log error
-	if err := webEngine.Run(); err != nil {
+	if err := webEngine.Run("0.0.0.0:8080"); err != nil {
 		log.Println("start server failed")
 	}
 }

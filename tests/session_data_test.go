@@ -94,7 +94,7 @@ func TestGetSessionData(t *testing.T) {
 
 func TestUploadSessionData(t *testing.T) {
 	// test cases
-	tests := []models.SessionUploadData{
+	tests := []models.SessionData{
 		{
 			SessionID:   "123456x",
 			SessionData: "test",

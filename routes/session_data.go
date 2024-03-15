@@ -2,8 +2,6 @@ package routes
 
 import (
 	"log"
-	"time"
-	"xrplatform/arworld/backend/env"
 	"xrplatform/arworld/backend/middleware/mongodb"
 	"xrplatform/arworld/backend/middleware/redis_cli"
 	"xrplatform/arworld/backend/models"
@@ -12,12 +10,12 @@ import (
 )
 
 func GetSessionData(ctx *gin.Context) {
-	appCtx := env.GetContext(ctx)
+	//appCtx := env.GetContext(ctx)
 
 	// declare form data for session
 	var formData models.SessionGetData
 
-	// verify data match type of SessionUploadData
+	// verify data match type of SessionData
 	if ctx.ShouldBind(&formData) != nil {
 		// log error here
 		log.Println("cannot bind to form data")
@@ -36,17 +34,17 @@ func GetSessionData(ctx *gin.Context) {
 		return
 	}
 
-	// get data from sessionID in redis
-	cacheData := redis_cli.GetSessionDataFromRedis(appCtx, redisClient, formData.SessionID)
-
-	if cacheData != "" {
-		// response Json for client
-		ctx.JSON(200, gin.H{
-			"status": 200,
-			"data":   cacheData,
-		})
-		return
-	}
+	//// get data from sessionID in redis
+	//cacheData := redis_cli.GetSessionDataFromRedis(appCtx, redisClient, formData.SessionID)
+	//
+	//if cacheData != "" {
+	//	// response Json for client
+	//	ctx.JSON(200, gin.H{
+	//		"status": 200,
+	//		"data":   cacheData,
+	//	})
+	//	return
+	//}
 
 	// get db client from ctx
 	db := mongodb.GetDB(ctx)
@@ -67,12 +65,12 @@ func GetSessionData(ctx *gin.Context) {
 		// response Json for client
 		ctx.JSON(200, gin.H{
 			"status": 500,
-			"error":  "Data error",
+			"error":  "cannot get session data",
 		})
 	} else {
-		// add data to redis
-		redis_cli.SetSessionDataToRedis(appCtx, redisClient, formData.SessionID,
-			sessionData, 5*time.Minute)
+		//// add data to redis
+		//redis_cli.SetSessionDataToRedis(appCtx, redisClient, formData.SessionID,
+		//	sessionData, 5*time.Minute)
 
 		// response Json for client
 		ctx.JSON(200, gin.H{
@@ -84,9 +82,9 @@ func GetSessionData(ctx *gin.Context) {
 
 func UploadSessionData(ctx *gin.Context) {
 	// declare form data for session
-	var formData models.SessionUploadData
+	var formData models.SessionData
 
-	// verify data match type of SessionUploadData
+	// verify data match type of SessionData
 	if ctx.ShouldBind(&formData) != nil {
 		// log error here
 		return
@@ -106,6 +104,45 @@ func UploadSessionData(ctx *gin.Context) {
 
 	// save data to db
 	err := mongodb.QueryUploadSessionData(db, formData.SessionID, formData.SessionData)
+
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(200, gin.H{
+			"status": 500,
+			"data":   "fail to upload data",
+		})
+	} else {
+		ctx.JSON(200, gin.H{
+			"status": 200,
+			"data":   "success",
+		})
+	}
+}
+
+func UpdateSessionData(ctx *gin.Context) {
+	// declare form data for session
+	var formData models.SessionData
+
+	// verify data match type of SessionData
+	if ctx.ShouldBind(&formData) != nil {
+		// log error here
+		return
+	}
+
+	// get db client from ctx
+	db := mongodb.GetDB(ctx)
+
+	if db == nil {
+		log.Println("cannot connect to db")
+		ctx.JSON(200, gin.H{
+			"status": 500,
+			"error":  "cannot connect to db",
+		})
+		return
+	}
+
+	// save data to db
+	err := mongodb.QueryUpdateSessionData(db, formData.SessionID, formData.SessionData)
 
 	if err != nil {
 		log.Println(err)

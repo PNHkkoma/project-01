@@ -18,6 +18,9 @@
 !LICENSE
 !.env
 
+# cors
+!cors.yml
+
 # !Makefile
 
 # ...even if they are in subdirectories
