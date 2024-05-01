@@ -17,9 +17,15 @@ func Connect(appCtx context.Context, webEngine *gin.Engine) {
 	defer cancel()
 
 	// create mongodb connect
-	dbConn := env.GetAppKey(appCtx, "mongo_conn").(string)
-	clientOptions := options.Client().ApplyURI(dbConn)
-	client, _ := mongo.Connect(ctx, clientOptions)
+	//dbConn := env.GetAppKey(appCtx, "mongo_conn").(string)
+	//clientOptions := options.Client().ApplyURI(dbConn)
+	// Use the SetServerAPIOptions() method to set the version of the Stable API on the client
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().ApplyURI("mongodb+srv://hung_test:hung7aVIP@cluster0.8ev4kzo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0").SetServerAPIOptions(serverAPI)
+	client, err := mongo.Connect(ctx, opts)
+	if err != nil {
+		fmt.Printf("Error connecting")
+	}
 
 	// get database
 	mongoDBName := env.GetAppKey(appCtx, "mongo_dbname").(string)

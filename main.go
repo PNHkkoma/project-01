@@ -5,7 +5,7 @@ import (
 	"xrplatform/arworld/backend/env"
 	"xrplatform/arworld/backend/middleware/cors"
 	"xrplatform/arworld/backend/middleware/mongodb"
-	"xrplatform/arworld/backend/middleware/redis_cli"
+	//"xrplatform/arworld/backend/middleware/redis_cli"
 	"xrplatform/arworld/backend/routes"
 
 	"github.com/gin-gonic/gin"
@@ -31,12 +31,12 @@ func main() {
 	// connect db
 	mongodb.Connect(appCtx, webEngine)
 
-	// redis connection
+	/* // redis connection
 	redis_cli.GetEnv(appCtx)
 
 	// connect redis
 	redisClient := redis_cli.Connect(appCtx, webEngine)
-	defer redis_cli.Close(redisClient)
+	defer redis_cli.Close(redisClient) */
 
 	// define all router for backend
 	routes.DefineRoutes(webEngine)
